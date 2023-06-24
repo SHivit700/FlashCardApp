@@ -2,15 +2,10 @@
 
 // ToDo:
 // implement relativity in graph ... 117 against 17 should look much smaller
-// frontend of leaderboard ... bring graph down
-// bug fixed ... correct doesn't add on last slide
-// maybe cannot add 2 slides in one go
-// added slide not appended to file
-// label which displays if file submitted or not or something
 // add delete flashcard button
-// no result from more info bug
-// more information segmentation fault
-// flashcard score count array
+// no result from more info bug ... add text saying info not found
+// Two same person can not have different score ... update score by searching and appending
+
 
 #include<gtk/gtk.h>
 #include<stdlib.h>
@@ -34,7 +29,7 @@ typedef struct{
 	GtkWidget *fixed5;
 	GtkWidget *button[17];
 	GtkWidget *entry[3];
-	GtkWidget *label[10];
+	GtkWidget *label[11];
 	GtkWidget *labelforbutton0;
 	GtkWidget *labeldisplaymoreinfo;
 }flashcardType;
@@ -240,10 +235,16 @@ void leftCallback(GtkWidget *widget, gpointer data) {
  void correctAns(GtkWidget *widget, gpointer data) {
 
 	if (pointer == currentNumberCards - 1) {
-		g_print("MAX");
+		if(flashCardCorrect[pointer] == 0) {
+			score++;
+			flashCardCorrect[pointer] = 1;
+		}
 	} else {
-		pointer++;
-		score++;
+		if(flashCardCorrect[pointer] == 0) {
+			flashCardCorrect[pointer] = 1;
+			pointer++;
+			score++;
+		}
 	}
 
 	questionAnswerLists* qaList = questionRead(questionFileName);
@@ -310,6 +311,8 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 
  void openWindow4(GtkWidget *widget, gpointer data) {
 	g_print("OPEN FileWriter Input");
+	char* str = g_strdup_printf("Current score: %d", score);
+	gtk_label_set_markup((gpointer)(fwidget.label[10]), str);
 	gtk_widget_hide(data);
 	gtk_widget_show_all(fwidget.window4);
 }
@@ -364,6 +367,10 @@ void openGraph(GtkWidget *widget, gpointer data) {
 
 	scoreLists = getTopScores(scoreFileName);
 
+	// initializing scoreAtSlide
+	for(int i = 0; i < MAX_QUESTIONS; i++) {
+		flashCardCorrect[i] = 0;
+	}
 
 	nameArray = scoreLists->names;
 	scoreArray = scoreLists->scores;
@@ -541,6 +548,9 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	fwidget.label[9] = gtk_label_new(NULL);
 	char* str10 = g_strdup_printf("Leaderboard");
 	gtk_label_set_markup((gpointer)(fwidget.label[9]), str10); // leaderboard ... fwidget2.window
+	fwidget.label[10] = gtk_label_new(NULL);
+	char* str11 = g_strdup_printf("Current Score: 0");
+	gtk_label_set_markup((gpointer)(fwidget.label[10]), str11); // score ... window4
 
 	gtk_widget_set_size_request(fwidget.label[0], 100, 50);
 	gtk_widget_set_size_request(fwidget.label[1], 175, 25);
@@ -552,6 +562,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_widget_set_size_request(fwidget.label[7], 250, 50);
 	gtk_widget_set_size_request(fwidget.label[8], 780, 100);
 	gtk_widget_set_size_request(fwidget.label[9], 780, 100);
+	gtk_widget_set_size_request(fwidget.label[10], 250, 50);
 
 
 	// adding to window
@@ -581,10 +592,11 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed3), fwidget.button[15], 200, 590); // Open Leaderboard
 
 	// adding to window4
-	gtk_fixed_put(GTK_FIXED(fwidget.fixed4),fwidget.label[7],264,190); // user name ...
+	gtk_fixed_put(GTK_FIXED(fwidget.fixed4),fwidget.label[7],264,180); // user name ...
+	gtk_fixed_put(GTK_FIXED(fwidget.fixed4),fwidget.label[10],265,320); // current score ...
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed4),fwidget.label[4],10,10); // Submit your progress label ...
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed4), fwidget.entry[2], 176, 240); // name ...
-	gtk_fixed_put(GTK_FIXED(fwidget.fixed4), fwidget.button[8], 252, 350); // Write to file ...
+	gtk_fixed_put(GTK_FIXED(fwidget.fixed4), fwidget.button[8], 252, 390); // Write to file ...
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed4), fwidget.button[12], 10, 542); // Goes back to home page ...
 
 	// adding to window5
@@ -627,9 +639,11 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	setForeColor(fwidget.label[7], "#333333", "#e0ddd5");
 	setForeColor(fwidget.label[8], "#f8f8ff", "#e2725b");
 	setForeColor(fwidget.label[9], "#f8f8ff", "#e2725b");
+	setForeColor(fwidget.label[10], "#333333", "#e0ddd5");
 
 
 	// setting label size
+	setLabelSize(fwidget.label[10], "20");
 	setLabelSize(fwidget.label[9], "60");
 	setLabelSize(fwidget.label[8], "60");
 	setLabelSize(fwidget.label[7], "40");
