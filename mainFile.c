@@ -7,6 +7,10 @@
 // maybe cannot add 2 slides in one go
 // added slide not appended to file
 // label which displays if file submitted or not or something
+// add delete flashcard button
+// no result from more info bug
+// more information segmentation fault
+// flashcard score count array
 
 #include<gtk/gtk.h>
 #include<stdlib.h>
@@ -51,18 +55,16 @@ int pointer;
 int score;
 flashcardType fwidget;
 nameScoreLists *scoreLists;
+int flashCardCorrect[MAX_QUESTIONS];
 
 questionAnswerLists *questionLists;
 char** nameArray;
 int* scoreArray;
-char** questions;
-char** answers;
 fs fwidget2;
 int widthAxis = 420;
 int heightAxis = 700;
 
-
- void draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
+void draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
 	guint width;
 	guint height;
 	GdkRGBA color;
@@ -165,8 +167,8 @@ void setLabelSize(GtkWidget *label, char *inp) {
 	//this means its a question
 	g_print("QUESTION");
 	qanda = false;
-	// gtk_button_set_label((gpointer) fwidget.button[0], questions[pointer]);
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
 
 	setColor(widget, "#77867f");
 
@@ -177,8 +179,8 @@ void setLabelSize(GtkWidget *label, char *inp) {
 	//this means its an answer
 	g_print("ANS");
 	qanda = true;
-	// gtk_button_set_label((gpointer) fwidget.button[0], answers[pointer]);
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), answers[pointer]);
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->answers[pointer]);
 	setColor(widget, "#9fd1d0"); // torquise
 	char* str2 = g_strdup_printf("Answer: %d / %d", pointer + 1, currentNumberCards);
 	gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
@@ -191,8 +193,8 @@ void leftCallback(GtkWidget *widget, gpointer data) {
   } else {
 	pointer = 0;
   }
-  // gtk_button_set_label(data, questions[pointer]);
-  gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
+  questionAnswerLists* qaList = questionRead(questionFileName);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
   char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
   gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
 
@@ -206,8 +208,8 @@ void leftCallback(GtkWidget *widget, gpointer data) {
   } else {
 	pointer++;
   }
-  // gtk_button_set_label(data, questions[pointer]);
-  gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
+  questionAnswerLists* qaList = questionRead(questionFileName);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
   char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
   gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
 
@@ -221,15 +223,18 @@ void leftCallback(GtkWidget *widget, gpointer data) {
   if(strcmp(inputQ, "") != 0 && strcmp(inputA, "") != 0) {
 	//do
 
-	if (currentNumberCards < MAX_QUESTIONS) {
-	  questions[currentNumberCards] = inputQ;
-	  answers[currentNumberCards] = inputA;
-	  currentNumberCards++;
-	}
+		if (currentNumberCards < MAX_QUESTIONS) {
+			fileWrite(questionFileName, inputQ, inputA);
+			currentNumberCards++;
+		}
 
   } else { // don't accept value
 		g_print("Null\n");
   }
+
+	// if worked
+	gtk_widget_hide(fwidget.window2);
+	gtk_widget_show_all(fwidget.window3);
 }
 
  void correctAns(GtkWidget *widget, gpointer data) {
@@ -241,40 +246,22 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 		score++;
 	}
 
-	// gtk_button_set_label(data, questions[pointer]);
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
 	char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
 	gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
 
-	// gtk_button_set_label(data, questions[pointer]);
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
 	char* str = g_strdup_printf("Score: %d", score);
 	gtk_label_set_markup((gpointer)(fwidget.label[0]), str);
 	setColor(data, "#77867f"); // light red
 	qanda = false;
 }
 
- void incorrectAns(GtkWidget *widget, gpointer data) {
-	g_print("Incorrect");
-	if (pointer == currentNumberCards - 1) {
-		g_print("MAX");
-	} else {
-		pointer++;
-	}
-
-	// gtk_button_set_label(data, questions[pointer]);
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
-	char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
-	gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
-
-	setColor(data, "#EDC7B7"); // light red
-	qanda = false;
-
-}
-
  void openFlashcards(GtkWidget *widget, gpointer data) {
 	g_print("OPEN FLASHCARDS");
 	gtk_widget_hide(data);
+	char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
+	gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
 	gtk_widget_show_all(fwidget.window);
 }
 
@@ -335,7 +322,8 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 
 	g_print("Pointer: %d\n", pointer);
 	// g_print("Inside moreInformation Function\n");
-	char *currQuest = answers[pointer];
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	char *currQuest = qaList->answers[pointer];
 	// g_print("current question: %s\n", currQuest);
 	char *title = getTarget(add20(currQuest));
 	// g_print("title: %s\n", title);
@@ -379,8 +367,6 @@ void openGraph(GtkWidget *widget, gpointer data) {
 
 	nameArray = scoreLists->names;
 	scoreArray = scoreLists->scores;
-	questions = questionLists->questions;
-	answers = questionLists->answers;
 	currentNumberCards = questionLists->size;
 
 	pointer = 0;
@@ -468,7 +454,8 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	fwidget.fixed5 = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(fwidget.window5), fwidget.fixed5);
 
-	fwidget.button[0] = gtk_button_new_with_label(questions[pointer]);
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	fwidget.button[0] = gtk_button_new_with_label(qaList->questions[pointer]);
 	fwidget.button[1] = gtk_button_new_with_label("<---");
 	fwidget.button[2] = gtk_button_new_with_label("--->");
 
@@ -476,12 +463,12 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	fwidget.button[0] = gtk_button_new();
 	fwidget.button[1] = gtk_button_new_with_label("<---");
 	fwidget.button[2] = gtk_button_new_with_label("--->");
-	fwidget.button[3] = gtk_button_new_with_label("Submit");
+	fwidget.button[3] = gtk_button_new_with_label("Submit"); // window2
 	fwidget.button[4] = gtk_button_new_with_label("Correct");
 	fwidget.button[5] = gtk_button_new_with_label("Incorrect");
 	fwidget.button[6] = gtk_button_new_with_label("Open Flashcards");
 	fwidget.button[7] = gtk_button_new_with_label("Input Flashcards");
-	fwidget.button[8] = gtk_button_new_with_label("Submit");
+	fwidget.button[8] = gtk_button_new_with_label("Submit"); // window4
 	fwidget.button[9] = gtk_button_new_with_label("Open File Writer Window");
 	fwidget.button[10] = gtk_button_new_with_label("Back to home page");
 	fwidget.button[11] = gtk_button_new_with_label("Back to home page");
@@ -675,7 +662,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_label_set_line_wrap(GTK_LABEL(fwidget.labelforbutton0), TRUE); // Enable line wrapping
 	gtk_label_set_max_width_chars(GTK_LABEL(fwidget.labelforbutton0), 10); // Set character limit
 	gtk_label_set_ellipsize(GTK_LABEL(fwidget.labelforbutton0), PANGO_ELLIPSIZE_NONE); // Disable ellipsizing
-	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), questions[pointer]);
+	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
 	gtk_container_add(GTK_CONTAINER(fwidget.button[0]), fwidget.labelforbutton0);
 
 
@@ -701,7 +688,6 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	g_signal_connect(fwidget.button[2], "clicked", G_CALLBACK(rightCallback), fwidget.button[0]);
 	g_signal_connect(fwidget.button[3], "clicked", G_CALLBACK(submit), NULL);
 	g_signal_connect(fwidget.button[4], "clicked", G_CALLBACK(correctAns), fwidget.button[0]);
-	g_signal_connect(fwidget.button[5], "clicked", G_CALLBACK(incorrectAns), fwidget.button[0]);
 	g_signal_connect(fwidget.button[6], "clicked", G_CALLBACK(openFlashcards), fwidget.window3);
 	g_signal_connect(fwidget.button[7], "clicked", G_CALLBACK(openInput), fwidget.window3);
 	g_signal_connect(fwidget.button[8], "clicked", G_CALLBACK(writeToFile), fwidget.window4);
