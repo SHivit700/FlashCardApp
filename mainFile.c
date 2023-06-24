@@ -14,6 +14,7 @@
 #include<stdbool.h>
 #include "fileIO.h"
 #include "wiki.h"
+#include "ctype.h"
 #define MAX_QUESTIONS 100
 
 typedef struct{
@@ -289,12 +290,23 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 
 	const char *entry2text = gtk_entry_get_text(fwidget.entry[2]);
 
-	fileWrite(scoreFileName, entry2text, scoreString);
-	bool wroteToFile = true;
+	char *str = entry2text;
+	bool invalid_characters = false;
+	while (*str) {
+    if (!isalpha(*str)) {
+      invalid_characters = true;
+    }
+    str++;
+	}
 
-	// fwidget.entry[2] - name
-	// score - score int
-	if(wroteToFile) {
+	if(!invalid_characters) {
+		fileWrite(scoreFileName, entry2text, scoreString);
+	} else {
+		// display invalid entry
+		g_print("Invalid entry\n");
+	}
+
+	if(!invalid_characters) {
 
 	  gtk_widget_hide(data);
 	  gtk_widget_show_all(fwidget.window3);
