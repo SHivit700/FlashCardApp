@@ -37,9 +37,6 @@ nameScoreLists* initNameList(int length) {
 void fileWrite(char *fileName, char *firstString, char *secondString) {
     FILE *out;
     struct stat stat_record;
-
-    printf("%s\n", fileName);
-
     if(stat(fileName, &stat_record))
         //if file doesn't exist, create a new one
         out = fopen(fileName, "w");
@@ -53,23 +50,23 @@ void fileWrite(char *fileName, char *firstString, char *secondString) {
         return;
     } 
 
-    printf("Hello");
+    // printf("Hello");
 
-    // check if name already present
-    int correspondingScore = -1;
-    nameScoreLists *listNameScore = scoreRead(out);
-    for(int i = 0; i < listNameScore->size; i++) {
-        printf("%s\n", listNameScore->names[i]);
-        if (strcmp(listNameScore->names[i], firstString) == 0) {
-            correspondingScore = listNameScore->scores[i]; // Matching entry found, return the index
-            printf("Found\n");
-            break;
-        }
-    }
+    // // check if name already present
+    // int correspondingScore = -1;
+    // nameScoreLists *listNameScore = scoreRead(out);
+    // for(int i = 0; i < listNameScore->size; i++) {
+    //     printf("%s\n", listNameScore->names[i]);
+    //     if (strcmp(listNameScore->names[i], firstString) == 0) {
+    //         correspondingScore = listNameScore->scores[i]; // Matching entry found, return the index
+    //         printf("Found\n");
+    //         break;
+    //     }
+    // }
 
-    if(correspondingScore >= 0) {
-        printf("Recurring\n");
-    }
+    // if(correspondingScore >= 0) {
+    //     printf("Recurring\n");
+    // }
     fprintf(out, "%s:%s\n", firstString, secondString);
 
     fclose(out); 
