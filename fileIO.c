@@ -168,24 +168,64 @@ nameScoreLists* getTopScores(const char* fileName) {
     lists->size = NUM_SCORES;
     return lists;
 }
+
+void deleteQuestionAnswerPair(const char* fileName, const char* question) {
+    questionAnswerLists* lists = questionRead(fileName);
+
+    // Find index of the given question 
+    int index = -1;
+    for (int i = 0; i < lists->size; i++) {
+        if (strcmp(lists->questions[i], question) == 0) {
+            index = i;
+            break;
+        }
+    }
+
+    // If the question is found, remove it from the list
+    if (index != -1) {
+        // Shift the remaining elements to fill the gap
+        for (int i = index; i < lists->size - 1; i++) {
+            strcpy(lists->questions[i], lists->questions[i + 1]);
+            strcpy(lists->answers[i], lists->answers[i + 1]);
+        }
+
+        // Decrease the size of the list
+        lists->size--;
+
+        // Rewrite the updated question-answer pairs to the file
+        FILE* out = fopen(fileName, "w");
+        if (out == NULL) {
+            perror("Failed to open file\n"); 
+            return;
+        }
+
+        for (int i = 0; i < lists->size; i++) {
+            fprintf(out, "%s:%s\n", lists->questions[i], lists->answers[i]);
+        }
+
+        fclose(out);
+    }
+}
+
 //TESTING
 
 // int main(void) {
 //     //write
-//     char *fileName = "leaderboard.txt";
+//     char *fileName = "questions.txt";
 //     const int MAX_SCORE_SIZE = 5;
-//     char *name = "Swarit";
-//     int score = 50;
-//     char scoreString[MAX_SCORE_SIZE];
-//     sprintf(scoreString, "%d", score);
-//     fileWrite(fileName, name, scoreString);
+//     char *question = "Hello?";
+//     // deleteQuestionAnswerPair(fileName, question);
+//     // int score = 50;
+//     // char scoreString[MAX_SCORE_SIZE];
+//     // sprintf(scoreString, "%d", score);
+//     // fileWrite(fileName, name, scoreString);
 //     //
 //     //read
-//     nameScoreLists *lists = getTopScores(fileName);
-//     for (int i = 0; i < lists->size; i++) {
-//         printf("name: %s\n", lists->names[i]);
-//         printf("score: %d\n", lists->scores[i]);
-//     }
+//     // nameScoreLists *lists = getTopScores(fileName);
+//     // for (int i = 0; i < lists->size; i++) {
+//     //     printf("name: %s\n", lists->names[i]);
+//     //     printf("score: %d\n", lists->scores[i]);
+//     // }
 //     //
 //     // char *fileName2 = "questions.txt";
 //     // char *question = "what is 2 + 2";

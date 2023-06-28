@@ -2,7 +2,7 @@
 
 // ToDo:
 // implement relativity in graph ... 117 against 17 should look much smaller
-// add delete flashcard button
+// delete function ... one card left in deck ... add a blank slide maybe
 // Two same person can not have different score ... update score by searching and appending
 
 
@@ -26,7 +26,7 @@ typedef struct{
 	GtkWidget *fixed3;
 	GtkWidget *fixed4;
 	GtkWidget *fixed5;
-	GtkWidget *button[17];
+	GtkWidget *button[18];
 	GtkWidget *entry[3];
 	GtkWidget *label[11];
 	GtkWidget *labelforbutton0;
@@ -361,6 +361,26 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_widget_show_all(fwidget2.window);
 }
 
+void deleteFlashcard(GtkWidget *widget, gpointer data) {
+	questionAnswerLists* qaList = questionRead(questionFileName);
+	const char *questionToDelete = qaList->questions[pointer];
+	char *fileName = "questions.txt";
+	if(pointer > 0) {
+		pointer--;
+		currentNumberCards--;
+		qanda = true;
+		deleteQuestionAnswerPair(fileName, questionToDelete);
+		callback(fwidget.button[0], NULL);
+	} else if(currentNumberCards > 1) { // atleast 2 cards in the deck
+		currentNumberCards--;
+		qanda = true;
+		deleteQuestionAnswerPair(fileName, questionToDelete);
+		callback(fwidget.button[0], NULL);
+	} else { // one card in the deck
+
+	}
+}
+
  void activate(GtkApplication *app, gpointer user_data) {
 	// initializing variables
 	questionLists = questionRead(questionFileName);
@@ -484,6 +504,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	fwidget.button[14] = gtk_button_new_with_label("Back to home page");
 	fwidget.button[15] = gtk_button_new_with_label("Open Leaderboard");
 	fwidget.button[16] = gtk_button_new_with_label("Back to home page");
+	fwidget.button[17] = gtk_button_new_with_label("X"); // delete flashcard button
 
 	gtk_widget_set_size_request(fwidget.button[0], 780, 410);
 	gtk_widget_set_size_request(fwidget.button[1], 150, 80);
@@ -502,6 +523,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_widget_set_size_request(fwidget.button[14], 780, 100);
 	gtk_widget_set_size_request(fwidget.button[15], 300, 120);
 	gtk_widget_set_size_request(fwidget.button[16], 780, 100);
+	gtk_widget_set_size_request(fwidget.button[17], 50, 50);
 
 
 	// initialized entry widgets
@@ -572,6 +594,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.button[4],237,537); // correct
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.button[11],10,642); // Goes back to home page
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.button[13], 62, 445); // More Information
+	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.button[17], 735, 10); // Delete flashcard
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.label[0],686.5,370); // Score
 	gtk_fixed_put(GTK_FIXED(fwidget.fixed), fwidget.label[1],5,20); // Question Number
 
@@ -629,6 +652,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	setColor(fwidget.button[14], "#8ea3ad");
 	setColor(fwidget.button[15], "#77867f");
 	setColor(fwidget.button[16], "#8ea3ad");
+	setColor(fwidget.button[17], "#77867f");
 
 	// setting color for labels
 	setForeColor(fwidget.label[2], "#472c4c", "#c8e9a0");
@@ -669,6 +693,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	setButtonSize(fwidget.button[14], "20");
 	setButtonSize(fwidget.button[15], "20");
 	setButtonSize(fwidget.button[16], "20");
+	setButtonSize(fwidget.button[17], "30");
 
 
 	// Creating label to display button[0] ... wrapping of text
@@ -713,6 +738,7 @@ void openGraph(GtkWidget *widget, gpointer data) {
 	g_signal_connect(fwidget.button[14], "clicked", G_CALLBACK(openWindowFromMoreInfo), fwidget.window5);
 	g_signal_connect(fwidget.button[15], "clicked", G_CALLBACK(openGraph), fwidget.window3);
 	g_signal_connect(fwidget.button[16], "clicked", G_CALLBACK(openWindow3), fwidget2.window);
+	g_signal_connect(fwidget.button[17], "clicked", G_CALLBACK(deleteFlashcard), NULL);
 
 
 	// displaying the main menu

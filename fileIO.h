@@ -23,3 +23,4 @@ extern void fileWrite(char *fileName, char *firstString, char *secondString);
 extern nameScoreLists* scoreRead(char* fileName);
 extern questionAnswerLists* questionRead(char *fileName);
 extern nameScoreLists* getTopScores(const char* fileName);
+extern void deleteQuestionAnswerPair(const char* fileName, const char* question);
