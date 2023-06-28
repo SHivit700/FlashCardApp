@@ -3,7 +3,6 @@
 // ToDo:
 // implement relativity in graph ... 117 against 17 should look much smaller
 // add delete flashcard button
-// no result from more info bug ... add text saying info not found
 // Two same person can not have different score ... update score by searching and appending
 
 
@@ -20,8 +19,8 @@ typedef struct{
 	GtkWidget *window; // actual flashcards
 	GtkWidget *window2; // input window
 	GtkWidget *window3; // menu window
-	GtkWidget *window4; //submit form window
-	GtkWidget *window5; //more information window
+	GtkWidget *window4; // submit form window
+	GtkWidget *window5; // more information window
 	GtkWidget *fixed;
 	GtkWidget *fixed2;
 	GtkWidget *fixed3;
@@ -332,6 +331,7 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 	// g_print("title: %s\n", title);
 	if(title == NULL) {
 	  g_print("Does not work F\n");
+		gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), "No Information found for the requested flashcard.");
 	} else {
 		char *text = getBody(add20(title));
 		int MAX_CHARS = 1000;
