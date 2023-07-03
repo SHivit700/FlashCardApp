@@ -18,7 +18,10 @@ typedef struct questionAnswerLists
     int size;
 } questionAnswerLists;
 
-
+extern int stringToInt(char *str, int len);
+extern questionAnswerLists* initQuestionList(int length);
+extern nameScoreLists* initNameList(int length);
+extern nameScoreLists* leaderboardRead(char *fileName);
 extern void fileWrite(char *fileName, char *firstString, char *secondString);
 extern nameScoreLists* scoreRead(char* fileName);
 extern questionAnswerLists* questionRead(char *fileName);

@@ -30,46 +30,193 @@ nameScoreLists* initNameList(int length) {
     }
     return list;
 }
+
+/*
+    pass in the file name - creates a struct where
+    the first string array will be populated with questions
+    the second string array will be populated with answers
+    the size is the number of lines
+*/
+questionAnswerLists* questionRead(char *fileName) {
+    int numLines;
+    char **lines = readFileLines(fileName, &numLines);
+    questionAnswerLists *lists = initQuestionList(numLines);
+    for (int i = 0; i < numLines; i++) {
+        char *line = lines[i];
+        char **splitLine = allocateLines();
+        tokenize(line, splitLine, ":");
+        strcpy(lists->questions[i], splitLine[0]);
+        strcpy(lists->answers[i], splitLine[1]);
+        freeLines(splitLine);
+    }
+    return lists;
+}
+
+// converts a char * to an integer
+int stringToInt(char *str, int len) {
+    int res = 0;
+    for(int i = 0; i < len; i++) {
+        switch(str[i]) {
+            case '0':
+                res = res*10 + 0;
+                break;
+
+            case '1':
+                res = res*10 + 1;
+                break;
+
+            case '2':
+                res = res*10 + 2;
+                break;
+
+            case '3':
+                res = res*10 + 3;
+                break;
+
+            case '4':
+                res = res*10 + 4;
+                break;
+
+            case '5':
+                res = res*10 + 5;
+                break;
+
+            case '6':
+                res = res*10 + 6;
+                break;
+
+            case '7':
+                res = res*10 + 7;
+                break;
+
+            case '8':
+                res = res*10 + 8;
+                break;
+
+            case '9':
+                res = res*10 + 9;
+                break;
+        }
+    }
+    return res;
+}
+
+/*
+    pass in the file name - creates a struct where
+    the first string array will be populated with username
+    the second string array will be populated with scores
+    the size is the number of lines
+*/
+nameScoreLists* leaderboardRead(char *fileName) {
+    int numLines;
+    char **lines = readFileLines(fileName, &numLines);
+    nameScoreLists *lists = initNameList(numLines);
+    for (int i = 0; i < numLines; i++) {
+        char *line = lines[i];
+        char **splitLine = allocateLines();
+        tokenize(line, splitLine, ":");
+        strcpy(lists->names[i], splitLine[0]);
+        lists->scores[i] = stringToInt(splitLine[1], strlen(splitLine[1]));
+
+        freeLines(splitLine);
+    }
+    return lists;
+}
+
+
+
+
 /*
     takes in the name of the file to output to and two strings
     that are to be added to the file, separated by a colon
 */
 void fileWrite(char *fileName, char *firstString, char *secondString) {
-    FILE *out;
-    struct stat stat_record;
-    if(stat(fileName, &stat_record))
-        //if file doesn't exist, create a new one
-        out = fopen(fileName, "w");
-    else {
-        //if file is present, append to it
-        out = fopen(fileName, "a");
+    // only update if score is higher 
+    // check if name is empty
+
+    // check if leaderboard
+    if(strcmp(fileName, "leaderboard.txt") == 0) {
+        nameScoreLists* lists = leaderboardRead(fileName);
+
+        // Find index of the given username 
+        int index = -1;
+        for (int i = 0; i < lists->size; i++) {
+            if (strcmp(lists->names[i], firstString) == 0) {
+                index = i;
+                break;
+            }
+        }
+
+        // If the username is found, remove it from the list
+        if (index != -1) {
+            if(lists->scores[index] < stringToInt(secondString, strlen(secondString))) {
+
+            } else {
+                // Shift the remaining elements to fill the gap
+                for (int i = index; i < lists->size - 1; i++) {
+                    strcpy(lists->names[i], lists->names[i + 1]);
+                    lists->scores[i] = lists->scores[i + 1];
+                }
+
+                // // printing the list to ensure no error
+                // for (int i = 0; i < lists->size - 1; i++) {
+                //     printf("%d ... %s:%d\n", i, lists->names[i], lists->scores[i]);
+                // }
+            
+                // add the new pair of username:score 
+                // make sure only highest score is added
+
+                FILE *out = fopen(fileName, "w");
+                if (out == NULL) {
+                    printf("Failed to open file\n"); 
+                    return;
+                }
+
+                for (int i = 0; i < lists->size - 1; i++) {
+                    fprintf(out, "%s:%d\n", lists->names[i], lists->scores[i]);
+                }
+
+                fprintf(out, "%s:%s\n", firstString, secondString);
+
+                fclose(out);
+            }
+        } else {
+            FILE *out;
+            struct stat stat_record;
+            if(stat(fileName, &stat_record))
+                //if file doesn't exist, create a new one
+                out = fopen(fileName, "w");
+            else {
+                //if file is present, append to it
+                out = fopen(fileName, "a");
+            }
+
+            if (out == NULL) {
+                perror("Failed to open file\n"); 
+                return;
+            }
+
+            fprintf(out, "%s:%s\n", firstString, secondString);
+            fclose(out); 
+        }
+    } else {
+        FILE *out;
+        struct stat stat_record;
+        if(stat(fileName, &stat_record))
+            //if file doesn't exist, create a new one
+            out = fopen(fileName, "w");
+        else {
+            //if file is present, append to it
+            out = fopen(fileName, "a");
+        }
+        if (out == NULL) {
+            perror("Failed to open file\n"); 
+            return;
+        }
+
+        fprintf(out, "%s:%s\n", firstString, secondString);
+        fclose(out); 
     }
-
-    if (out == NULL) {
-        perror("Failed to open file\n"); 
-        return;
-    } 
-
-    // printf("Hello");
-
-    // // check if name already present
-    // int correspondingScore = -1;
-    // nameScoreLists *listNameScore = scoreRead(out);
-    // for(int i = 0; i < listNameScore->size; i++) {
-    //     printf("%s\n", listNameScore->names[i]);
-    //     if (strcmp(listNameScore->names[i], firstString) == 0) {
-    //         correspondingScore = listNameScore->scores[i]; // Matching entry found, return the index
-    //         printf("Found\n");
-    //         break;
-    //     }
-    // }
-
-    // if(correspondingScore >= 0) {
-    //     printf("Recurring\n");
-    // }
-    fprintf(out, "%s:%s\n", firstString, secondString);
-
-    fclose(out); 
 }
 
 /*
@@ -91,27 +238,6 @@ nameScoreLists* scoreRead(char* fileName) {
         freeLines(splitLine);
     }
     
-    return lists;
-}
-
-/*
-    pass in the file name - creates a struct where
-    the first string array will be populated with questions
-    the second string array will be populated with answers
-    the size is the number of lines
-*/
-questionAnswerLists* questionRead(char *fileName) {
-    int numLines;
-    char **lines = readFileLines(fileName, &numLines);
-    questionAnswerLists *lists = initQuestionList(numLines);
-    for (int i = 0; i < numLines; i++) {
-        char *line = lines[i];
-        char **splitLine = allocateLines();
-        tokenize(line, splitLine, ":");
-        strcpy(lists->questions[i], splitLine[0]);
-        strcpy(lists->answers[i], splitLine[1]);
-        freeLines(splitLine);
-    }
     return lists;
 }
 

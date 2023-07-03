@@ -4,6 +4,7 @@
 // implement relativity in graph ... 117 against 17 should look much smaller
 // delete function ... one card left in deck ... add a blank slide maybe
 // Two same person can not have different score ... update score by searching and appending
+// update score to leaderboard.txt
 
 
 #include<gtk/gtk.h>
@@ -75,7 +76,6 @@ void draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
 	for (int i = 0; i < NUM_SCORES; i++) {
 		cairo_set_source_rgb(cr, 0.2 + (i/10.0), 0.3 + (i/10.0), 0.4 + (i/10.0));
-		// g_print("\n%d", scoreArray[i] * 50);
 		cairo_rectangle(cr, (i*150) + 103, widthAxis, -100, -(scoreArray[i] * 25));
 		cairo_fill(cr);
 	}
@@ -159,7 +159,6 @@ void setLabelSize(GtkWidget *label, char *inp) {
  void callback(GtkWidget *widget, gpointer data) {
   if (qanda) {
 	//this means its a question
-	g_print("QUESTION");
 	qanda = false;
 	questionAnswerLists* qaList = questionRead(questionFileName);
 	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->questions[pointer]);
@@ -171,7 +170,6 @@ void setLabelSize(GtkWidget *label, char *inp) {
 
   } else {
 	//this means its an answer
-	g_print("ANS");
 	qanda = true;
 	questionAnswerLists* qaList = questionRead(questionFileName);
 	gtk_label_set_text(GTK_LABEL(fwidget.labelforbutton0), qaList->answers[pointer]);
@@ -198,7 +196,7 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 
  void rightCallback(GtkWidget *widget, gpointer data) {
   if(pointer == currentNumberCards - 1) {
-	g_print("MAX");
+		g_print("MAX");
   } else {
 	pointer++;
   }
@@ -258,7 +256,6 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 }
 
  void openFlashcards(GtkWidget *widget, gpointer data) {
-	g_print("OPEN FLASHCARDS");
 	gtk_widget_hide(data);
 	char* str2 = g_strdup_printf("Question: %d / %d", pointer + 1, currentNumberCards);
 	gtk_label_set_markup((gpointer)(fwidget.label[1]), str2);
@@ -266,7 +263,6 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 }
 
  void openInput(GtkWidget *widget, gpointer data) {
-	g_print("OPEN INPUT");
 	gtk_widget_hide(data);
 	gtk_widget_show_all(fwidget.window2);
 }
@@ -303,13 +299,11 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 }
 
  void openWindow3(GtkWidget *widget, gpointer data) {
-	g_print("OPEN FileWriter Input");
 	gtk_widget_hide(data);
 	gtk_widget_show_all(fwidget.window3);
 }
 
  void openWindow4(GtkWidget *widget, gpointer data) {
-	g_print("OPEN FileWriter Input");
 	char* str = g_strdup_printf("Current score: %d", score);
 	gtk_label_set_markup((gpointer)(fwidget.label[10]), str);
 	gtk_widget_hide(data);
@@ -318,38 +312,36 @@ void leftCallback(GtkWidget *widget, gpointer data) {
 
 // web scraping function
  void moreInformation(GtkWidget *widget, gpointer data) {
-	// g_print("OPEN Window5 to display More Information\n");
 	gtk_widget_hide(data);
 	gtk_widget_show_all(fwidget.window5);
 
-	g_print("Pointer: %d\n", pointer);
-	// g_print("Inside moreInformation Function\n");
 	questionAnswerLists* qaList = questionRead(questionFileName);
 	char *currQuest = qaList->answers[pointer];
-	// g_print("current question: %s\n", currQuest);
 	char *title = getTarget(add20(currQuest));
-	// g_print("title: %s\n", title);
 	if(title == NULL) {
 	  g_print("Does not work F\n");
 		gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), "No Information found for the requested flashcard.");
 	} else {
 		char *text = getBody(add20(title));
-		int MAX_CHARS = 1000;
-		if (g_utf8_strlen(text, -1) > MAX_CHARS)
-		{
-			gchar *truncated_text = g_utf8_substring(text, 0, MAX_CHARS);
-			gchar *final_text = g_strconcat(truncated_text, "...", NULL);
-			gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), final_text);
-			g_free(truncated_text);
-			g_free(final_text);
+		if(text == NULL) {
+			gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), "No Information found for the requested flashcard.");
 		} else {
-			gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), text);
+			int MAX_CHARS = 1000;
+			if (g_utf8_strlen(text, -1) > MAX_CHARS)
+			{
+				gchar *truncated_text = g_utf8_substring(text, 0, MAX_CHARS);
+				gchar *final_text = g_strconcat(truncated_text, "...", NULL);
+				gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), final_text);
+				g_free(truncated_text);
+				g_free(final_text);
+			} else {
+				gtk_label_set_text(GTK_LABEL(fwidget.labeldisplaymoreinfo), text);
+			}
 		}
 	}
 }
 
  void openWindowFromMoreInfo(GtkWidget *widget, gpointer data) {
-	g_print("OPEN Window");
 	gtk_widget_hide(data);
 	gtk_widget_show_all(fwidget.window);
 }
@@ -418,7 +410,6 @@ void deleteFlashcard(GtkWidget *widget, gpointer data) {
 	g_signal_connect(fwidget2.drawing_area, "realize", G_CALLBACK(gtk_widget_queue_draw), NULL);
 
 	for (int i = 0; i < NUM_SCORES; i++) {
-		// g_print("%d", i);
 		fwidget2.label[i] = gtk_label_new(NULL);
 		gtk_label_set_markup((gpointer)(fwidget2.label[i]), g_strdup_printf("%s", nameArray[i]));
 		gtk_widget_set_size_request(fwidget2.label[i], 200, 200);
@@ -439,6 +430,7 @@ void deleteFlashcard(GtkWidget *widget, gpointer data) {
   gtk_window_set_title(GTK_WINDOW(fwidget.window),"flashcard app");
   gtk_window_set_default_size(GTK_WINDOW(fwidget.window), 800, 750);
   gtk_container_set_border_width(GTK_CONTAINER(fwidget.window),0);
+	// add destroy
 
 	fwidget.window2 = gtk_application_window_new(app);
 	gtk_window_set_position(GTK_WINDOW(fwidget.window2),GTK_WIN_POS_CENTER);

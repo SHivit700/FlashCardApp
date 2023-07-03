@@ -56,6 +56,7 @@ static char* makeRequest(char *url) {
   curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
   curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, cb);
   curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&chunk);
+  curl_easy_setopt(hnd, CURLOPT_TIMEOUT, 10L);  // Set timeout to 10 seconds
 
   ret = curl_easy_perform(hnd);
 
