@@ -53,6 +53,7 @@ questionAnswerLists* questionRead(char *fileName) {
 }
 
 // converts a char * to an integer
+// test edge case ... not a number
 int stringToInt(char *str, int len) {
     int res = 0;
     for(int i = 0; i < len; i++) {
@@ -149,19 +150,14 @@ void fileWrite(char *fileName, char *firstString, char *secondString) {
 
         // If the username is found, remove it from the list
         if (index != -1) {
-            if(lists->scores[index] < stringToInt(secondString, strlen(secondString))) {
-
+            if(lists->scores[index] > stringToInt(secondString, strlen(secondString))) {
+                // do nothing as highscore > currentScore
             } else {
                 // Shift the remaining elements to fill the gap
                 for (int i = index; i < lists->size - 1; i++) {
                     strcpy(lists->names[i], lists->names[i + 1]);
                     lists->scores[i] = lists->scores[i + 1];
                 }
-
-                // // printing the list to ensure no error
-                // for (int i = 0; i < lists->size - 1; i++) {
-                //     printf("%d ... %s:%d\n", i, lists->names[i], lists->scores[i]);
-                // }
             
                 // add the new pair of username:score 
                 // make sure only highest score is added
