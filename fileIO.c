@@ -97,6 +97,9 @@ int stringToInt(char *str, int len) {
             case '9':
                 res = res*10 + 9;
                 break;
+
+            default:
+                return 0;
         }
     }
     return res;

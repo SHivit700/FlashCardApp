@@ -3,8 +3,6 @@
 // ToDo:
 // implement relativity in graph ... 117 against 17 should look much smaller
 // delete function ... one card left in deck ... add a blank slide maybe
-// Two same person can not have different score ... update score by searching and appending
-// update score to leaderboard.txt
 
 
 #include<gtk/gtk.h>
@@ -40,6 +38,8 @@ typedef struct {
 	GtkWidget *drawing_area;
 	GtkWidget *label[10]; //Labels to display 5 names, 5 scores
 } fs;
+
+GtkApplication *app;
 
 const int MAX_SCORE_SIZE = 5;
 const char* scoreFileName = "leaderboard.txt";
@@ -81,13 +81,14 @@ void draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
 	}
 }
 
-// Callback function for window destroy event
-void on_window_destroy(GtkWidget *widget, gpointer data)
-{
-	gtk_main_quit();
+void closeAllWindowsAndQuit() {
+        gtk_widget_destroy(fwidget.window);
+        gtk_widget_destroy(fwidget.window2);
+        gtk_widget_destroy(fwidget.window3);
+        gtk_widget_destroy(fwidget.window4);
+        gtk_widget_destroy(fwidget.window5);
+        g_application_quit(G_APPLICATION(app));
 }
-
-
 
 
 
@@ -425,12 +426,11 @@ void deleteFlashcard(GtkWidget *widget, gpointer data) {
 
 
 
-  fwidget.window = gtk_application_window_new(app);
-  gtk_window_set_position(GTK_WINDOW(fwidget.window),GTK_WIN_POS_CENTER);
-  gtk_window_set_title(GTK_WINDOW(fwidget.window),"flashcard app");
-  gtk_window_set_default_size(GTK_WINDOW(fwidget.window), 800, 750);
-  gtk_container_set_border_width(GTK_CONTAINER(fwidget.window),0);
-	// add destroy
+	fwidget.window = gtk_application_window_new(app);
+	gtk_window_set_position(GTK_WINDOW(fwidget.window),GTK_WIN_POS_CENTER);
+	gtk_window_set_title(GTK_WINDOW(fwidget.window),"flashcard app");
+	gtk_window_set_default_size(GTK_WINDOW(fwidget.window), 800, 750);
+	gtk_container_set_border_width(GTK_CONTAINER(fwidget.window),0);
 
 	fwidget.window2 = gtk_application_window_new(app);
 	gtk_window_set_position(GTK_WINDOW(fwidget.window2),GTK_WIN_POS_CENTER);
@@ -472,6 +472,18 @@ void deleteFlashcard(GtkWidget *widget, gpointer data) {
 
 	fwidget.fixed5 = gtk_fixed_new();
 	gtk_container_add(GTK_CONTAINER(fwidget.window5), fwidget.fixed5);
+
+
+	// stops program when closed 
+	g_signal_connect(fwidget.window, "delete-event", G_CALLBACK(closeAllWindowsAndQuit), NULL);
+	g_signal_connect(fwidget.window2, "delete-event", G_CALLBACK(closeAllWindowsAndQuit), NULL);
+	g_signal_connect(fwidget.window3, "delete-event", G_CALLBACK(closeAllWindowsAndQuit), NULL);
+	g_signal_connect(fwidget.window4, "delete-event", G_CALLBACK(closeAllWindowsAndQuit), NULL);
+	g_signal_connect(fwidget.window5, "delete-event", G_CALLBACK(closeAllWindowsAndQuit), NULL);
+
+
+
+
 
 	questionAnswerLists* qaList = questionRead(questionFileName);
 	fwidget.button[0] = gtk_button_new_with_label(qaList->questions[pointer]);
@@ -739,7 +751,6 @@ void deleteFlashcard(GtkWidget *widget, gpointer data) {
 
 
 int main(int argc, char **argv){
-  GtkApplication *app;
   gtk_init(&argc, &argv);
 
   int status;
