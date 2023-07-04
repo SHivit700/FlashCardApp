@@ -3,7 +3,7 @@
 // ToDo:
 // implement relativity in graph ... 117 against 17 should look much smaller
 // delete function ... one card left in deck ... add a blank slide maybe
-
+// create an executable desktop application
 
 #include<gtk/gtk.h>
 #include<stdlib.h>
